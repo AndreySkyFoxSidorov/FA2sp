@@ -5,6 +5,27 @@
 > NOTICE: As EA has released the source code of FA2, this project will be no longer maintained, I will work on migrating features based on the source code.
 
 # FA2sp
+
+## Fork workspace
+
+This fork keeps the legacy FA2sp extension and the source-based FinalAlert editor
+in separate projects. Initialize the nested repositories with
+`git submodule update --init --recursive`.
+
+- `FA2pp/` uses the [FA2pp fork](https://github.com/AndreySkyFoxSidorov/FA2pp).
+- `FinalAlert2YR-src/` uses the [mission editor fork](https://github.com/AndreySkyFoxSidorov/CNC_TS_and_RA2_Mission_Editor).
+  It adds an in-process MCP server, MCP settings in the Options menu, Russian,
+  Ukrainian and Spanish UI translations, and legacy game-string decoding fixes.
+- `MFC42/` continues to use its existing upstream repository.
+
+Build the source-based editor from `FinalAlert2YR-src/MissionEditor.sln` using
+`FinalAlertRelease YR|Win32` and the v143 x86 toolchain. Its local runtime package
+is `build/FinalAlert2MCP/`; build artifacts and generated validation maps are
+excluded from version control. Never inject the legacy `FA2sp.dll` into the
+rebuilt editor, because its hard-coded addresses target the original executable.
+
+## Original project
+
 ...is an engine extension project launched by secsome and aimed at providing a set of new features and fixes for **FinalAlert2** based on [FA2pp](https://github.com/secsome/FA2pp) and [Syringe](https://github.com/Ares-Developers/Syringe) to allow injecting code.
 
 While FA2sp is independent of FA2Ext by AlexB, you cannot use FA2sp with using FA2Ext.

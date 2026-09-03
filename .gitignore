@@ -7,6 +7,10 @@ Debug
 Release
 .vs
 
+# Local runtime packages, toolchains, and map validation output:
+/build/
+/GeneratedMaps/
+
 # Don't ignore these files:
 !Debug/vxl_drawing_lib.lib
 !Release/vxl_drawing_lib.lib
