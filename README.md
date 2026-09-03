@@ -2,7 +2,7 @@
 [![Workflow](https://img.shields.io/github/actions/workflow/status/secsome/FA2sp/nighty.yml?label=Nighty%20Build&style=flat-square)](https://github.com/secsome/FA2sp/actions)
 [![license](https://img.shields.io/github/license/secsome/FA2sp?label=License&style=flat-square)](https://www.gnu.org/licenses/agpl-3.0.en.html)
 
-> NOTICE: As EA has released the source code of FA2, this project will be no longer maintained, I will work on migrating features based on the source code.
+> Upstream notice: the original legacy FA2sp project is no longer maintained. This fork also includes the separate source-based editor described below.
 
 # FA2sp
 
@@ -23,6 +23,76 @@ Build the source-based editor from `FinalAlert2YR-src/MissionEditor.sln` using
 is `build/FinalAlert2MCP/`; build artifacts and generated validation maps are
 excluded from version control. Never inject the legacy `FA2sp.dll` into the
 rebuilt editor, because its hard-coded addresses target the original executable.
+
+## Changes in this fork
+
+The source-based editor adds the following features:
+
+- **MCP map automation:** 24 tools inspect and edit maps, import semantic terrain
+  masks, place objects and player starts, validate results, render previews and
+  save maps. Requests run through the editor's UI thread.
+- **MCP settings in the menu:** **Options > MCP settings** controls server
+  startup, port, endpoint, authentication, allowlists and request limits.
+  Configuration is saved atomically and applied after restarting the editor.
+- **Russian, Ukrainian and Spanish UI:** select the language under
+  **Options > Settings**. Translation files are shipped with the editor.
+- **Readable game object names:** legacy Russian CSF strings containing
+  Windows-1251 bytes are detected and repaired in memory. Native Unicode strings
+  remain readable; game archives and maps are not rewritten by this repair.
+  UI language and names supplied by the installed game are independent.
+- **Regression checks:** translation coverage, text decoding, configuration
+  persistence and a read-only MCP protocol smoke script are included.
+
+## MCP quick start
+
+1. Clone this workspace with its nested repositories:
+
+   ```powershell
+   git clone --recurse-submodules https://github.com/AndreySkyFoxSidorov/FA2sp.git
+   cd FA2sp
+   ```
+
+2. Build `FinalAlert2YR-src/MissionEditor.sln` with **FinalAlertRelease YR**,
+   **Win32** and the **v143** toolchain. The output is
+   `FinalAlert2YR-src/dist/FinalAlert2YR/`. Use an installed RA2/YR game for the
+   required game data and complete the editor's initial game-path setup.
+   The local `build/FinalAlert2MCP/` package is not downloaded by Git; it is a
+   separately assembled runtime copy. Keep all runtime DLLs, INI files and
+   translation data beside the executable when copying a build.
+3. Start `FinalAlert2YR.exe` from the runtime directory and leave it open.
+   Close modal dialogs before sending map commands. In **Options > MCP
+   settings**, enable startup and keep the listen address at `127.0.0.1`.
+   Restart the editor after changing server settings.
+4. In a local MCP client, add a **Streamable HTTP** server with URL
+   `http://127.0.0.1:7462/mcp`. If an authentication token is configured, send
+   `Authorization: Bearer <your-token>`. `/health` requires the same token.
+   The checked-in `.codex/config.toml` contains this workspace's default local
+   endpoint without a token.
+5. With the editor running at its default endpoint, verify the connection from
+   the runtime directory:
+
+   ```powershell
+   Invoke-RestMethod http://127.0.0.1:7462/health
+   powershell -ExecutionPolicy Bypass -File .\Test-FinalAlertMcp.ps1
+   ```
+
+   The example assumes the default empty token. For authentication, supply the
+   same Bearer header to the health request and set `FINALALERT_MCP_TOKEN` in the
+   smoke-test process environment. The smoke script checks `/mcp` and does not
+   modify the map.
+6. Discover `tools/list`, call `finalalert.get_status`, then inspect the loaded
+   map with `finalalert.get_map_info`. Query `finalalert.list_catalog` before
+   choosing object or tile IDs. Use a fresh UUID `operationId` for each mutation;
+   retry only the identical request with its original ID after a timeout.
+7. Validate and inspect the preview before saving under a new absolute path
+   with `includePreview: true`. Reopen the saved file and validate it again.
+   `finalalert.validate_map` does not replace a real RA2/YR load test or checks
+   for playable, reachable and balanced multiplayer starts.
+
+See the [English MCP guide in the editor README](https://github.com/AndreySkyFoxSidorov/CNC_TS_and_RA2_Mission_Editor/blob/main/README.md#using-mcp)
+for configuration defaults, example tool arguments, the full tool list,
+semantic-image colors and troubleshooting. Keep the listener on loopback;
+another computer cannot connect to your machine's `127.0.0.1` directly.
 
 ## Original project
 
